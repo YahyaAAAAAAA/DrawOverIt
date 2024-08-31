@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/window.dart';
-import 'package:test_1/home.dart';
+import 'package:test_1/pages/home.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io' show Platform;
 

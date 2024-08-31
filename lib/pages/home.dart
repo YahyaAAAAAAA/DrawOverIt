@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:easy_draggable/easy_draggable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/window.dart';
 import 'package:flutter_acrylic/window_effect.dart';
+import 'package:test_1/components/menu_button.dart';
+import 'package:test_1/components/panel_icon.dart';
+import 'package:test_1/utils/custom_icons_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:whiteboard/whiteboard.dart';
 import 'package:window_manager/window_manager.dart';
@@ -27,14 +31,25 @@ class _HomePageState extends State<HomePage> with TrayListener {
   double strokeW = 4;
   Color strokeC = Colors.yellow;
   bool erase = false;
+  Color black = const Color(0xFF30333A);
+  Color black2 = const Color.fromARGB(255, 38, 40, 46);
+  Color gray = const Color(0xFF8C8C8E);
+  Color white = const Color(0xFFFFFFFF);
 
   @override
   void initState() {
+    //tray listener, icon and menu setup
     trayManager.addListener(this);
     _handleSetIcon(_iconType);
     _setContextMenu();
+
+    //make window transparent
     Window.setEffect(effect: WindowEffect.transparent);
+
+    //white board controller
     whiteBoardController = WhiteBoardController();
+
+    //maximize screen
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async {
         await windowManager.maximize();
@@ -184,131 +199,130 @@ class _HomePageState extends State<HomePage> with TrayListener {
             isErasing: erase,
             strokeColor: strokeC,
           ),
-          //top row
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: buttonWidth,
-                  height: buttonHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.black,
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      whiteBoardController.undo();
-                    },
-                    icon: const Icon(
-                      Icons.undo,
-                      color: Colors.white,
+          //controlling panel
+          EasyDraggableWidget(
+            floatingBuilder: (context, constraints) => Container(
+              width: 400,
+              // height: 220,
+              decoration: BoxDecoration(
+                color: black,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  topRow(),
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        MenuButton(
+                          icon: Icons.circle,
+                          onPressed: () {},
+                          color: strokeC,
+                          bgColor: black2,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        PanelIcon(
+                          icon: CustomIcons.line_width,
+                          onPressed: () {},
+                          color: gray,
+                          bgColor: black2,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 10),
+                        PanelIcon(
+                          icon: CustomIcons.eraser,
+                          onPressed: () {
+                            setState(() {
+                              erase = !erase;
+                            });
+                          },
+                          color: gray,
+                          bgColor: black2,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 10),
+                        PanelIcon(
+                          icon: CustomIcons.undo,
+                          onPressed: () {
+                            whiteBoardController.undo();
+                          },
+                          color: gray,
+                          bgColor: black2,
+                          size: 15,
+                        ),
+                        const SizedBox(width: 10),
+                        PanelIcon(
+                          icon: CustomIcons.settings,
+                          onPressed: () {},
+                          color: gray,
+                          bgColor: black2,
+                          size: 15,
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                SizedBox(width: gapWidth),
-                Container(
-                  width: buttonWidth,
-                  height: buttonHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.black,
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      windowManager.hide();
-                      whiteBoardController.clear();
-                    },
-                    icon: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                SizedBox(width: gapWidth),
-                Container(
-                  width: buttonWidth,
-                  height: buttonHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.black,
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      whiteBoardController.redo();
-                    },
-                    icon: const Icon(
-                      Icons.redo,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
       ),
-      //bottom row
-      bottomSheet: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
+    );
+  }
+
+  Widget topRow() {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Container(
+        width: 400,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: gray,
+            width: 0.1,
+          ),
+        ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(
-              width: buttonWidth,
-              height: buttonHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.black,
-              ),
-              child: IconButton(
-                onPressed: () {
-                  //TODO stroke width
-                },
-                icon: const Icon(
-                  Icons.horizontal_rule,
-                  color: Colors.white,
-                ),
+            const SizedBox(
+              width: 10,
+            ),
+            Text(
+              'Draw Over It',
+              style: TextStyle(
+                color: gray,
+                fontFamily: 'Play',
+                fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(width: gapWidth),
-            Container(
-              width: buttonWidth,
-              height: buttonHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.black,
-              ),
-              child: IconButton(
-                onPressed: () {
-                  //TODO color switch
-                },
-                icon: const Icon(
-                  Icons.color_lens_outlined,
-                  color: Colors.white,
-                ),
+            const SizedBox(
+              width: 190,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.horizontal_rule,
+                size: 20,
+                color: gray,
               ),
             ),
-            SizedBox(width: gapWidth),
-            Container(
-              width: buttonWidth,
-              height: buttonHeight,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.black,
+            IconButton(
+              onPressed: () {
+                windowManager.hide();
+                whiteBoardController.clear();
+              },
+              icon: Icon(
+                Icons.close,
+                size: 20,
+                color: gray,
               ),
-              child: IconButton(
-                onPressed: () {
-                  //TODO erasing
-                },
-                icon: const Icon(
-                  Icons.draw_outlined,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            )
           ],
         ),
       ),

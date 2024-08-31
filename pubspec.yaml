@@ -39,6 +39,7 @@ dependencies:
   tray_manager: ^0.2.3
   flutter_acrylic: ^1.1.4
   whiteboard: ^0.0.2
+  easy_draggable: ^0.0.2
 
 dev_dependencies:
   flutter_test:
@@ -78,10 +79,16 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+    - family: Play
+      fonts:
+        - asset: assets/fonts/PlaywritePL-Regular.ttf
+    - family: CustomIcons
+      fonts:
+        - asset: assets/fonts/CustomIcons.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

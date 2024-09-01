@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/window.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:test_1/pages/home.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io' show Platform;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Window.initialize();
+
+  //unregister hotkeys
+  await hotKeyManager.unregisterAll();
 
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
@@ -17,16 +22,12 @@ void main() async {
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.hidden,
       windowButtonVisibility: true,
-      // maximumSize: Size(500, 500),
-      // minimumSize: Size(500, 500),
     );
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
       await windowManager.focus();
       await windowManager.setResizable(false);
-      // await windowManager.setFullScreen(false);
-      // await windowManager.setMaximizable(true);
       await windowManager.maximize();
     });
   }

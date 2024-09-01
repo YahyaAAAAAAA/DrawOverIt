@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:easy_draggable/easy_draggable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/window.dart';
 import 'package:flutter_acrylic/window_effect.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:test_1/components/menu_button_color.dart';
 import 'package:test_1/components/menu_button_width.dart';
 import 'package:test_1/components/panel_icon.dart';
@@ -26,6 +28,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   String _iconType = _kIconTypeOriginal;
   Menu? _menu;
   late WhiteBoardController whiteBoardController;
+  late HotKey hotKey;
   double buttonWidth = 40;
   double buttonHeight = 40;
   double gapWidth = 10;
@@ -36,7 +39,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
   bool erase = false;
   bool panelSwitch = false;
   Color black = const Color(0xFF30333A);
-  Color black2 = const Color.fromARGB(255, 38, 40, 46);
+  Color topRowColor = const Color(0xFF2B2E34);
+  Color shadowColor = const Color.fromARGB(255, 38, 40, 46);
   Color gray = const Color(0xFF8C8C8E);
   Color white = const Color(0xFFFFFFFF);
 
@@ -53,10 +57,31 @@ class _HomePageState extends State<HomePage> with TrayListener {
     //white board controller
     whiteBoardController = WhiteBoardController();
 
+    //register hotkey (ALT+Q)
+    hotKey = HotKey(
+      key: PhysicalKeyboardKey.keyQ,
+      modifiers: [HotKeyModifier.alt],
+      scope: HotKeyScope.system,
+    );
+
     //maximize screen
     WidgetsBinding.instance.addPostFrameCallback(
       (_) async {
+        //make sure window fill the screen
         await windowManager.maximize();
+
+        //show/hide app when (ALT+Q) is pressed system wide .
+        await hotKeyManager.register(
+          hotKey,
+          keyDownHandler: (hotKey) async {
+            if (await windowManager.isVisible()) {
+              await windowManager.hide();
+              whiteBoardController.clear();
+            } else {
+              await windowManager.show();
+            }
+          },
+        );
       },
     );
     super.initState();
@@ -220,6 +245,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           topRow(),
+                          // Divider(color: gray, thickness: 0.1),
                           Padding(
                             padding: const EdgeInsets.all(10),
                             child: Row(
@@ -297,7 +323,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
         );
       },
       color: gray,
-      bgColor: black2,
+      bgColor: shadowColor,
       size: 15,
     );
   }
@@ -309,7 +335,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
         whiteBoardController.undo();
       },
       color: gray,
-      bgColor: black2,
+      bgColor: shadowColor,
       size: 15,
     );
   }
@@ -324,7 +350,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
         });
       },
       color: erase ? white : gray,
-      bgColor: black2,
+      bgColor: shadowColor,
       size: 15,
     );
   }
@@ -364,7 +390,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
         });
       },
       color: strokeC,
-      bgColor: black2,
+      bgColor: shadowColor,
       size: 20,
     );
   }
@@ -392,68 +418,73 @@ class _HomePageState extends State<HomePage> with TrayListener {
         });
       },
       color: gray,
-      bgColor: black2,
+      bgColor: shadowColor,
       size: 15,
     );
   }
 
   Widget topRow() {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Container(
-        width: 400,
-        height: 40,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
+    return Container(
+      width: 400,
+      // height: 10,
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(13),
+          topRight: Radius.circular(12),
+          bottomLeft: Radius.zero,
+          bottomRight: Radius.zero,
+        ),
+        border: Border(
+          bottom: BorderSide(
             color: gray,
-            width: 0.1,
+            width: 0.3,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(
-              width: 10,
+        color: topRowColor,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(
+            width: 10,
+          ),
+          Text(
+            'Draw Over It',
+            style: TextStyle(
+              color: gray,
+              fontFamily: 'Play',
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              'Draw Over It',
-              style: TextStyle(
-                color: gray,
-                fontFamily: 'Play',
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          const SizedBox(
+            width: 190,
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                panelSwitch = true;
+              });
+            },
+            tooltip: 'Minimize',
+            icon: Icon(
+              Icons.horizontal_rule,
+              size: 20,
+              color: gray,
             ),
-            const SizedBox(
-              width: 190,
+          ),
+          IconButton(
+            onPressed: () {
+              windowManager.hide();
+              whiteBoardController.clear();
+            },
+            tooltip: 'Close To Background',
+            icon: Icon(
+              Icons.close,
+              size: 20,
+              color: gray,
             ),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  panelSwitch = true;
-                });
-              },
-              tooltip: 'Minimize',
-              icon: Icon(
-                Icons.horizontal_rule,
-                size: 20,
-                color: gray,
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                windowManager.hide();
-                whiteBoardController.clear();
-              },
-              tooltip: 'Close To Background',
-              icon: Icon(
-                Icons.close,
-                size: 20,
-                color: gray,
-              ),
-            )
-          ],
-        ),
+          )
+        ],
       ),
     );
   }

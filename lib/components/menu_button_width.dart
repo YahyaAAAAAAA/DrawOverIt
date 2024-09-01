@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 
-class MenuButton extends StatelessWidget {
-  MenuButton({
+// ignore: must_be_immutable
+class MenuButtonWidth extends StatelessWidget {
+  MenuButtonWidth({
     super.key,
     required this.icon,
-    required this.onPressed,
     required this.color,
     required this.bgColor,
     required this.size,
+    required this.widthValue,
+    required this.onTap1,
+    required this.onTap2,
+    required this.onTap3,
   });
 
   final IconData icon;
   final Color color;
   final Color bgColor;
   final double size;
-  void Function()? onPressed;
+  final double widthValue;
+  void Function()? onTap1;
+  void Function()? onTap2;
+  void Function()? onTap3;
 
   @override
   Widget build(BuildContext context) {
@@ -31,31 +38,36 @@ class MenuButton extends StatelessWidget {
       position: PopupMenuPosition.under,
       offset: const Offset(0, 20),
       constraints: const BoxConstraints.tightFor(width: 50),
+      initialValue: widthValue.toInt(),
+      tooltip: '',
       itemBuilder: (context) {
         return [
           PopupMenuItem(
+            value: 2,
+            onTap: onTap1,
             child: Center(
-              child: Icon(
-                icon,
-                size: size,
+              child: Divider(
+                thickness: 2,
                 color: color,
               ),
             ),
           ),
           PopupMenuItem(
+            value: 4,
+            onTap: onTap2,
             child: Center(
-              child: Icon(
-                icon,
-                size: size,
+              child: Divider(
+                thickness: 4,
                 color: color,
               ),
             ),
           ),
           PopupMenuItem(
+            onTap: onTap3,
+            value: 6,
             child: Center(
-              child: Icon(
-                icon,
-                size: size,
+              child: Divider(
+                thickness: 6,
                 color: color,
               ),
             ),

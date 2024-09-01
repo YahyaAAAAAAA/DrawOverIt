@@ -5,7 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/window.dart';
 import 'package:flutter_acrylic/window_effect.dart';
-import 'package:test_1/components/menu_button.dart';
+import 'package:test_1/components/menu_button_color.dart';
+import 'package:test_1/components/menu_button_width.dart';
 import 'package:test_1/components/panel_icon.dart';
 import 'package:test_1/utils/custom_icons_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
@@ -29,8 +30,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
   double buttonHeight = 40;
   double gapWidth = 10;
   double strokeW = 4;
-  Color strokeC = Colors.yellow;
+  double initStrokeW = 4;
+  Color strokeC = Colors.blue;
+  String colorValue = "blue";
   bool erase = false;
+  bool panelSwitch = false;
   Color black = const Color(0xFF30333A);
   Color black2 = const Color.fromARGB(255, 38, 40, 46);
   Color gray = const Color(0xFF8C8C8E);
@@ -189,7 +193,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
-        alignment: Alignment.topCenter,
         children: [
           //whiteboard
           WhiteBoard(
@@ -200,77 +203,197 @@ class _HomePageState extends State<HomePage> with TrayListener {
             strokeColor: strokeC,
           ),
           //controlling panel
-          EasyDraggableWidget(
-            floatingBuilder: (context, constraints) => Container(
-              width: 400,
-              // height: 220,
-              decoration: BoxDecoration(
-                color: black,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  topRow(),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        MenuButton(
-                          icon: Icons.circle,
-                          onPressed: () {},
-                          color: strokeC,
-                          bgColor: black2,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        PanelIcon(
-                          icon: CustomIcons.line_width,
-                          onPressed: () {},
-                          color: gray,
-                          bgColor: black2,
-                          size: 15,
-                        ),
-                        const SizedBox(width: 10),
-                        PanelIcon(
-                          icon: CustomIcons.eraser,
-                          onPressed: () {
-                            setState(() {
-                              erase = !erase;
-                            });
-                          },
-                          color: gray,
-                          bgColor: black2,
-                          size: 15,
-                        ),
-                        const SizedBox(width: 10),
-                        PanelIcon(
-                          icon: CustomIcons.undo,
-                          onPressed: () {
-                            whiteBoardController.undo();
-                          },
-                          color: gray,
-                          bgColor: black2,
-                          size: 15,
-                        ),
-                        const SizedBox(width: 10),
-                        PanelIcon(
-                          icon: CustomIcons.settings,
-                          onPressed: () {},
-                          color: gray,
-                          bgColor: black2,
-                          size: 15,
-                        ),
-                      ],
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: panelSwitch
+                ? minimizedButton()
+                : EasyDraggableWidget(
+                    left: 100,
+                    top: 200,
+                    floatingBuilder: (context, constraints) => Container(
+                      width: 400,
+                      decoration: BoxDecoration(
+                        color: black,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          topRow(),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                colorStrokeSelect(),
+                                const SizedBox(width: 10),
+                                widthStrokeSelect(),
+                                const SizedBox(width: 10),
+                                eraseButton(),
+                                const SizedBox(width: 10),
+                                undoButton(),
+                                const SizedBox(width: 10),
+                                settingsButton(context),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
+    );
+  }
+
+  Align minimizedButton() {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 30, right: 30),
+        child: IconButton(
+          onPressed: () {
+            setState(() {
+              panelSwitch = false;
+            });
+          },
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(black),
+            elevation: const WidgetStatePropertyAll(1),
+            shadowColor:
+                const WidgetStatePropertyAll(Color.fromARGB(255, 26, 27, 32)),
+          ),
+          padding: const EdgeInsets.all(25),
+          icon: Icon(
+            CustomIcons.pencil,
+            color: gray,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
+  PanelIcon settingsButton(BuildContext context) {
+    return PanelIcon(
+      icon: CustomIcons.settings,
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: black,
+              content: const Column(
+                children: [
+                  //TODO:
+                  //1-add (remove stroke on close)
+                  //2-add hotkey
+                  //3-add show redo
+                ],
+              ),
+            );
+          },
+        );
+      },
+      color: gray,
+      bgColor: black2,
+      size: 15,
+    );
+  }
+
+  PanelIcon undoButton() {
+    return PanelIcon(
+      icon: CustomIcons.undo,
+      onPressed: () {
+        whiteBoardController.undo();
+      },
+      color: gray,
+      bgColor: black2,
+      size: 15,
+    );
+  }
+
+  PanelIcon eraseButton() {
+    return PanelIcon(
+      icon: CustomIcons.eraser,
+      onPressed: () {
+        setState(() {
+          erase = !erase;
+          strokeW = erase ? 100 : initStrokeW;
+        });
+      },
+      color: erase ? white : gray,
+      bgColor: black2,
+      size: 15,
+    );
+  }
+
+  MenuColorButton colorStrokeSelect() {
+    return MenuColorButton(
+      icon: Icons.circle,
+      colorValue: colorValue,
+      onTap1: () {
+        setState(() {
+          strokeC = Colors.blue;
+          colorValue = "blue";
+        });
+      },
+      onTap2: () {
+        setState(() {
+          strokeC = Colors.yellow;
+          colorValue = "yellow";
+        });
+      },
+      onTap3: () {
+        setState(() {
+          strokeC = Colors.red;
+          colorValue = "red";
+        });
+      },
+      onTap4: () {
+        setState(() {
+          strokeC = Colors.green;
+          colorValue = "green";
+        });
+      },
+      onTap5: () {
+        setState(() {
+          strokeC = Colors.white;
+          colorValue = "white";
+        });
+      },
+      color: strokeC,
+      bgColor: black2,
+      size: 20,
+    );
+  }
+
+  MenuButtonWidth widthStrokeSelect() {
+    return MenuButtonWidth(
+      icon: CustomIcons.line_width,
+      widthValue: strokeW,
+      onTap1: () {
+        setState(() {
+          strokeW = 2;
+          initStrokeW = 2;
+        });
+      },
+      onTap2: () {
+        setState(() {
+          strokeW = 4;
+          initStrokeW = 4;
+        });
+      },
+      onTap3: () {
+        setState(() {
+          strokeW = 6;
+          initStrokeW = 6;
+        });
+      },
+      color: gray,
+      bgColor: black2,
+      size: 15,
     );
   }
 
@@ -305,7 +428,12 @@ class _HomePageState extends State<HomePage> with TrayListener {
               width: 190,
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  panelSwitch = true;
+                });
+              },
+              tooltip: 'Minimize',
               icon: Icon(
                 Icons.horizontal_rule,
                 size: 20,
@@ -317,6 +445,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                 windowManager.hide();
                 whiteBoardController.clear();
               },
+              tooltip: 'Close To Background',
               icon: Icon(
                 Icons.close,
                 size: 20,

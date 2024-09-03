@@ -28,4 +28,5 @@ class CustomIcons {
   static const IconData eraser__1_ = IconData(0xe831, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData eraser = IconData(0xe832, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData pencil = IconData(0xe833, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData draw_icon = IconData(0xe834, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

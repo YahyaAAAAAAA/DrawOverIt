@@ -44,6 +44,8 @@ class MenuColorButton extends StatelessWidget {
       constraints: const BoxConstraints.tightFor(width: 50),
       initialValue: colorValue,
       tooltip: '',
+      popUpAnimationStyle:
+          AnimationStyle(duration: const Duration(milliseconds: 200)),
       itemBuilder: (context) {
         return [
           PopupMenuItem(

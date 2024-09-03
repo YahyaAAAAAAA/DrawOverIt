@@ -16,6 +16,7 @@ import 'package:whiteboard/whiteboard.dart';
 import 'package:window_manager/window_manager.dart';
 
 const _kIconTypeOriginal = 'original';
+final GlobalKey floatingKey = GlobalKey();
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   String _iconType = _kIconTypeOriginal;
   Menu? _menu;
   late WhiteBoardController whiteBoardController;
+  late WhiteBoardController floatingBoardController;
   late HotKey hotKey;
   double buttonWidth = 40;
   double buttonHeight = 40;
@@ -38,10 +40,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
   String colorValue = "blue";
   bool erase = false;
   bool panelSwitch = false;
+  bool floatingSwitch = true;
   Color black = const Color(0xFF30333A);
   Color topRowColor = const Color(0xFF2B2E34);
   Color shadowColor = const Color.fromARGB(255, 38, 40, 46);
-  Color gray = const Color(0xFF8C8C8E);
+  Color gray = const Color(0xFF8C8C8E); //#1a1a1a
   Color white = const Color(0xFFFFFFFF);
 
   @override
@@ -56,6 +59,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
     //white board controller
     whiteBoardController = WhiteBoardController();
+    floatingBoardController = WhiteBoardController();
 
     //register hotkey (ALT+Q)
     hotKey = HotKey(
@@ -75,6 +79,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           hotKey,
           keyDownHandler: (hotKey) async {
             if (await windowManager.isVisible()) {
+              await windowManager.minimize();
               await windowManager.hide();
               whiteBoardController.clear();
             } else {
@@ -227,6 +232,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
             isErasing: erase,
             strokeColor: strokeC,
           ),
+          //floating board
+          floatingBoard(),
           //controlling panel
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
@@ -245,7 +252,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           topRow(),
-                          // Divider(color: gray, thickness: 0.1),
                           Padding(
                             padding: const EdgeInsets.all(10),
                             child: Row(
@@ -259,6 +265,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
                                 const SizedBox(width: 10),
                                 undoButton(),
                                 const SizedBox(width: 10),
+                                floatingBoardButton(),
+                                const SizedBox(width: 10),
                                 settingsButton(context),
                               ],
                             ),
@@ -270,6 +278,113 @@ class _HomePageState extends State<HomePage> with TrayListener {
           ),
         ],
       ),
+    );
+  }
+
+  PanelIcon floatingBoardButton() {
+    return PanelIcon(
+      icon: Icons.border_color_rounded,
+      onPressed: () {
+        setState(() {
+          floatingSwitch = !floatingSwitch;
+        });
+      },
+      color: floatingSwitch ? gray : white,
+      bgColor: shadowColor,
+      size: 20,
+    );
+  }
+
+  Widget floatingBoard() {
+    return EasyDraggableWidget(
+      left: floatingSwitch ? 3000 : 1000,
+      top: 50,
+      floatingBuilder: (context, constraints) {
+        return Column(
+          children: [
+            Container(
+              width: 500,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(13),
+                  topRight: Radius.circular(12),
+                  bottomLeft: Radius.zero,
+                  bottomRight: Radius.zero,
+                ),
+                border: Border(
+                  bottom: BorderSide(
+                    color: gray,
+                    width: 0.6,
+                  ),
+                ),
+                color: topRowColor,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const SizedBox(width: 5),
+                  Icon(
+                    Icons.border_color_rounded,
+                    color: gray,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Floating Board',
+                    style: TextStyle(
+                      color: gray,
+                      fontFamily: 'Play',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 260),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        floatingBoardController.undo();
+                      });
+                    },
+                    tooltip: 'Undo',
+                    icon: Icon(
+                      CustomIcons.undo,
+                      size: 15,
+                      color: gray,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        floatingSwitch = !floatingSwitch;
+                      });
+                    },
+                    tooltip: 'Close Floating Board',
+                    icon: Icon(
+                      Icons.close,
+                      size: 20,
+                      color: gray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 500,
+              height: 400,
+              decoration: BoxDecoration(
+                color: black,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: WhiteBoard(
+                controller: floatingBoardController,
+                backgroundColor: black,
+                isErasing: erase,
+                strokeColor: strokeC,
+                strokeWidth: strokeW,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -290,11 +405,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
             shadowColor:
                 const WidgetStatePropertyAll(Color.fromARGB(255, 26, 27, 32)),
           ),
-          padding: const EdgeInsets.all(25),
+          padding: const EdgeInsets.all(10),
           icon: Icon(
-            CustomIcons.pencil,
+            CustomIcons.draw_icon,
             color: gray,
-            size: 20,
+            size: 45,
           ),
         ),
       ),
@@ -426,7 +541,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
   Widget topRow() {
     return Container(
       width: 400,
-      // height: 10,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(13),
@@ -448,6 +562,14 @@ class _HomePageState extends State<HomePage> with TrayListener {
           const SizedBox(
             width: 10,
           ),
+          Icon(
+            CustomIcons.draw_icon,
+            color: gray,
+            // size: 30,
+          ),
+          const SizedBox(
+            width: 2,
+          ),
           Text(
             'Draw Over It',
             style: TextStyle(
@@ -457,7 +579,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
             ),
           ),
           const SizedBox(
-            width: 190,
+            width: 175,
           ),
           IconButton(
             onPressed: () {
@@ -473,8 +595,9 @@ class _HomePageState extends State<HomePage> with TrayListener {
             ),
           ),
           IconButton(
-            onPressed: () {
-              windowManager.hide();
+            onPressed: () async {
+              await windowManager.minimize();
+              await windowManager.hide();
               whiteBoardController.clear();
             },
             tooltip: 'Close To Background',

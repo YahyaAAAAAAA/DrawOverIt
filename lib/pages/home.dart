@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
     //tray listener, icon and menu setup
     trayManager.addListener(this);
     _setContextMenu();
+    print("dd");
 
     //make window transparent
     Window.setEffect(effect: WindowEffect.transparent);

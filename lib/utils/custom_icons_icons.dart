@@ -29,4 +29,7 @@ class CustomIcons {
   static const IconData eraser = IconData(0xe832, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData pencil = IconData(0xe833, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData draw_icon = IconData(0xe834, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData board = IconData(0xe835, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData add_board = IconData(0xe836, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData active_board = IconData(0xe837, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

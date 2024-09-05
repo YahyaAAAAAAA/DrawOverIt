@@ -15,9 +15,6 @@ import 'package:tray_manager/tray_manager.dart';
 import 'package:whiteboard/whiteboard.dart';
 import 'package:window_manager/window_manager.dart';
 
-const _kIconTypeOriginal = 'original';
-final GlobalKey floatingKey = GlobalKey();
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -26,7 +23,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TrayListener {
-  String _iconType = _kIconTypeOriginal;
   Menu? _menu;
   late WhiteBoardController whiteBoardController;
   late WhiteBoardController floatingBoardController;
@@ -51,7 +47,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
   void initState() {
     //tray listener, icon and menu setup
     trayManager.addListener(this);
-    _handleSetIcon(_iconType);
     _setContextMenu();
 
     //make window transparent
@@ -73,6 +68,9 @@ class _HomePageState extends State<HomePage> with TrayListener {
       (_) async {
         //make sure window fill the screen
         await windowManager.maximize();
+
+        //set tray icon
+        await trayManager.setIcon('assets/images/draw_icon.ico');
 
         //show/hide app when (ALT+Q) is pressed system wide .
         await hotKeyManager.register(
@@ -96,20 +94,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
   void dispose() {
     trayManager.removeListener(this);
     super.dispose();
-  }
-
-  Future<void> _handleSetIcon(String iconType) async {
-    _iconType = iconType;
-    String iconPath =
-        Platform.isWindows ? 'images/tray_icon.ico' : 'images/tray_icon.png';
-
-    if (_iconType == 'original') {
-      iconPath = Platform.isWindows
-          ? 'images/tray_icon_original.ico'
-          : 'images/tray_icon_original.png';
-    }
-
-    await trayManager.setIcon(iconPath);
   }
 
   void _setContextMenu() async {

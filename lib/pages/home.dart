@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   late HotKey hotKey;
   double buttonWidth = 40;
   double buttonHeight = 40;
-  double gapWidth = 10;
+  double gapWidth = 15;
   double strokeW = 4;
   double initStrokeW = 4;
   Color strokeC = Colors.blue;
@@ -116,6 +116,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   void hideWindow() async {
     await windowManager.minimize();
     await windowManager.hide();
+
     if (prefs.getBool('clear')!) {
       whiteBoardController.clear();
     }
@@ -170,7 +171,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                     left: 100,
                     top: 200,
                     floatingBuilder: (context, constraints) => Container(
-                      width: 400,
+                      width: 450,
                       decoration: BoxDecoration(
                         color: c.black,
                         borderRadius: BorderRadius.circular(12),
@@ -185,15 +186,25 @@ class _HomePageState extends State<HomePage> with TrayListener {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 colorStrokeSelect(),
-                                const SizedBox(width: 10),
+                                SizedBox(width: gapWidth),
                                 widthStrokeSelect(),
-                                const SizedBox(width: 10),
+                                SizedBox(width: gapWidth),
                                 eraseButton(),
-                                const SizedBox(width: 10),
+                                SizedBox(width: gapWidth),
                                 undoButton(),
-                                const SizedBox(width: 10),
+                                SizedBox(width: gapWidth),
+                                PanelIcon(
+                                  icon: Icons.clear_all_rounded,
+                                  onPressed: () {
+                                    whiteBoardController.clear();
+                                  },
+                                  color: c.gray,
+                                  bgColor: c.shadowColor,
+                                  size: 25,
+                                ),
+                                SizedBox(width: gapWidth),
                                 floatingBoardButton(),
-                                const SizedBox(width: 10),
+                                SizedBox(width: gapWidth),
                                 settingsButton(context),
                               ],
                             ),
@@ -592,7 +603,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
   Widget topRow() {
     return Container(
-      width: 400,
+      width: 450,
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(13),
@@ -631,7 +642,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
             ),
           ),
           const SizedBox(
-            width: 175,
+            width: 220,
           ),
           IconButton(
             onPressed: () {

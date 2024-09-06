@@ -42,6 +42,7 @@ dependencies:
   easy_draggable: ^0.0.2
   hotkey_manager: ^0.2.3
   flutter_launcher_icons: ^0.13.1
+  shared_preferences: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -89,9 +90,9 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Inter
+    - family: Abel
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Abel-Regular.ttf
     - family: Play
       fonts:
         - asset: assets/fonts/PlaywritePL-Regular.ttf

@@ -1,13 +1,15 @@
 import 'package:easy_draggable/easy_draggable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/window.dart';
 import 'package:flutter_acrylic/window_effect.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test_1/components/custom_checkbox.dart';
 import 'package:test_1/components/menu_button_color.dart';
 import 'package:test_1/components/menu_button_width.dart';
 import 'package:test_1/components/panel_icon.dart';
+import 'package:test_1/utils/custom_colors.dart';
 import 'package:test_1/utils/custom_icons_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:whiteboard/whiteboard.dart';
@@ -24,6 +26,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   Menu? _menu;
   late WhiteBoardController whiteBoardController;
   late WhiteBoardController floatingBoardController;
+  late SharedPreferences prefs;
   late HotKey hotKey;
   double buttonWidth = 40;
   double buttonHeight = 40;
@@ -35,21 +38,13 @@ class _HomePageState extends State<HomePage> with TrayListener {
   bool erase = false;
   bool panelSwitch = false;
   bool floatingSwitch = true;
-  Color black = const Color(0xFF30333A);
-  Color topRowColor = const Color(0xFF2B2E34);
-  Color shadowColor = const Color.fromARGB(255, 38, 40, 46);
-  Color gray = const Color(0xFF8C8C8E); //#1a1a1a
-  Color white = const Color(0xFFFFFFFF);
+  CustomColors c = CustomColors();
 
   @override
   void initState() {
     //tray listener, icon and menu setup
     trayManager.addListener(this);
     _setContextMenu();
-    print("dd");
-
-    //make window transparent
-    Window.setEffect(effect: WindowEffect.transparent);
 
     //white board controller
     whiteBoardController = WhiteBoardController();
@@ -71,14 +66,36 @@ class _HomePageState extends State<HomePage> with TrayListener {
         //set tray icon
         await trayManager.setIcon('assets/images/draw_icon.ico');
 
+        //shared pref
+        prefs = await SharedPreferences.getInstance();
+
+        //check if data already exists
+        if (!prefs.containsKey('clear')) {
+          await prefs.setBool('clear', true);
+        }
+
+        if (!prefs.containsKey('blur')) {
+          await prefs.setBool('blur', false);
+        }
+        if (!prefs.containsKey('solid')) {
+          await prefs.setBool('solid', false);
+        }
+
+        //make window blur or solid (defualt trans)
+        if (prefs.getBool('blur')!) {
+          Window.setEffect(effect: WindowEffect.aero);
+        } else if (prefs.getBool('solid')!) {
+          Window.setEffect(effect: WindowEffect.solid);
+        } else {
+          Window.setEffect(effect: WindowEffect.transparent);
+        }
+
         //show/hide app when (ALT+Q) is pressed system wide .
         await hotKeyManager.register(
           hotKey,
           keyDownHandler: (hotKey) async {
             if (await windowManager.isVisible()) {
-              await windowManager.minimize();
-              await windowManager.hide();
-              whiteBoardController.clear();
+              hideWindow();
             } else {
               await windowManager.show();
             }
@@ -95,110 +112,37 @@ class _HomePageState extends State<HomePage> with TrayListener {
     super.dispose();
   }
 
+  //minimize first so it doesn't look ugly to just exit the app
+  void hideWindow() async {
+    await windowManager.minimize();
+    await windowManager.hide();
+    if (prefs.getBool('clear')!) {
+      whiteBoardController.clear();
+    }
+  }
+
+  //handels context menu (for now only Exit App)
   void _setContextMenu() async {
     _menu ??= Menu(
       items: [
         MenuItem(
-          label: 'Look Up "LeanFlutter"',
-        ),
-        MenuItem(
-          label: 'Search with Google',
-        ),
-        MenuItem.separator(),
-        MenuItem(
-          label: 'Cut',
-        ),
-        MenuItem(
-          label: 'Copy',
-        ),
-        MenuItem(
-          label: 'Paste',
-          disabled: true,
-        ),
-        MenuItem.submenu(
-          label: 'Share',
-          submenu: Menu(
-            items: [
-              MenuItem.checkbox(
-                label: 'Item 1',
-                checked: true,
-                onClick: (menuItem) {
-                  if (kDebugMode) {
-                    print('click item 1');
-                  }
-                  menuItem.checked = !(menuItem.checked == true);
-                },
-              ),
-              MenuItem.checkbox(
-                label: 'Item 2',
-                checked: false,
-                onClick: (menuItem) {
-                  if (kDebugMode) {
-                    print('click item 2');
-                  }
-                  menuItem.checked = !(menuItem.checked == true);
-                },
-              ),
-            ],
-          ),
-        ),
-        MenuItem.separator(),
-        MenuItem.submenu(
-          label: 'Font',
-          submenu: Menu(
-            items: [
-              MenuItem.checkbox(
-                label: 'Item 1',
-                checked: true,
-                onClick: (menuItem) {
-                  if (kDebugMode) {
-                    print('click item 1');
-                  }
-                  menuItem.checked = !(menuItem.checked == true);
-                },
-              ),
-              MenuItem.checkbox(
-                label: 'Item 2',
-                checked: false,
-                onClick: (menuItem) {
-                  if (kDebugMode) {
-                    print('click item 2');
-                  }
-                  menuItem.checked = !(menuItem.checked == true);
-                },
-              ),
-              MenuItem.separator(),
-              MenuItem(
-                label: 'Item 3',
-                checked: false,
-              ),
-              MenuItem(
-                label: 'Item 4',
-                checked: false,
-              ),
-              MenuItem(
-                label: 'Item 5',
-                checked: false,
-              ),
-            ],
-          ),
-        ),
-        MenuItem.submenu(
-          label: 'Speech',
-          submenu: Menu(
-            items: [
-              MenuItem(
-                label: 'Item 1',
-              ),
-              MenuItem(
-                label: 'Item 2',
-              ),
-            ],
-          ),
+          label: 'Exit Draw Over It',
+          onClick: (menuItem) async {
+            await windowManager.close();
+          },
         ),
       ],
     );
     await trayManager.setContextMenu(_menu!);
+  }
+
+  TextStyle getTextStyle() {
+    return TextStyle(
+      color: c.gray,
+      fontSize: 18,
+      fontFamily: 'Abel',
+      fontWeight: FontWeight.bold,
+    );
   }
 
   @override
@@ -228,7 +172,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                     floatingBuilder: (context, constraints) => Container(
                       width: 400,
                       decoration: BoxDecoration(
-                        color: black,
+                        color: c.black,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(
@@ -266,15 +210,15 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
   PanelIcon floatingBoardButton() {
     return PanelIcon(
-      icon: Icons.border_color_rounded,
+      icon: floatingSwitch ? CustomIcons.add_board : CustomIcons.active_board,
       onPressed: () {
         setState(() {
           floatingSwitch = !floatingSwitch;
         });
       },
-      color: floatingSwitch ? gray : white,
-      bgColor: shadowColor,
-      size: 20,
+      color: floatingSwitch ? c.gray : c.white,
+      bgColor: c.shadowColor,
+      size: 17,
     );
   }
 
@@ -296,26 +240,26 @@ class _HomePageState extends State<HomePage> with TrayListener {
                 ),
                 border: Border(
                   bottom: BorderSide(
-                    color: gray,
+                    color: c.gray,
                     width: 0.6,
                   ),
                 ),
-                color: topRowColor,
+                color: c.topRowColor,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 12),
                   Icon(
-                    Icons.border_color_rounded,
-                    color: gray,
-                    size: 20,
+                    CustomIcons.active_board,
+                    color: c.gray,
+                    size: 17,
                   ),
                   const SizedBox(width: 5),
                   Text(
                     'Floating Board',
                     style: TextStyle(
-                      color: gray,
+                      color: c.gray,
                       fontFamily: 'Play',
                       fontWeight: FontWeight.bold,
                     ),
@@ -331,7 +275,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                     icon: Icon(
                       CustomIcons.undo,
                       size: 15,
-                      color: gray,
+                      color: c.gray,
                     ),
                   ),
                   IconButton(
@@ -344,7 +288,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                     icon: Icon(
                       Icons.close,
                       size: 20,
-                      color: gray,
+                      color: c.gray,
                     ),
                   ),
                 ],
@@ -354,12 +298,12 @@ class _HomePageState extends State<HomePage> with TrayListener {
               width: 500,
               height: 400,
               decoration: BoxDecoration(
-                color: black,
+                color: c.black,
                 borderRadius: BorderRadius.circular(50),
               ),
               child: WhiteBoard(
                 controller: floatingBoardController,
-                backgroundColor: black,
+                backgroundColor: c.black,
                 isErasing: erase,
                 strokeColor: strokeC,
                 strokeWidth: strokeW,
@@ -383,7 +327,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
             });
           },
           style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(black),
+            backgroundColor: WidgetStatePropertyAll(c.black),
             elevation: const WidgetStatePropertyAll(1),
             shadowColor:
                 const WidgetStatePropertyAll(Color.fromARGB(255, 26, 27, 32)),
@@ -391,7 +335,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           padding: const EdgeInsets.all(10),
           icon: Icon(
             CustomIcons.draw_icon,
-            color: gray,
+            color: c.gray,
             size: 45,
           ),
         ),
@@ -406,23 +350,148 @@ class _HomePageState extends State<HomePage> with TrayListener {
         showDialog(
           context: context,
           builder: (context) {
-            return AlertDialog(
-              backgroundColor: black,
-              content: const Column(
-                children: [
-                  //TODO:
-                  //1-add (remove stroke on close)
-                  //2-add hotkey
-                  //3-add show redo
-                ],
-              ),
-            );
+            return StatefulBuilder(builder: (context, setState) {
+              return AlertDialog(
+                backgroundColor: Colors.transparent,
+                content: Container(
+                  decoration: BoxDecoration(
+                    color: c.black,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      settingsTopRow(setState, context),
+                      //TODO:
+                      //1-add (remove stroke on close)
+                      CustomCheckbox(
+                        value: prefs.getBool('clear')!,
+                        title: 'Clear board on close',
+                        textStyle: getTextStyle(),
+                        onChanged: (p0) {
+                          setState(
+                            () {
+                              prefs.setBool('clear', !prefs.getBool('clear')!);
+                            },
+                          );
+                        },
+                      ),
+                      Divider(
+                        color: c.gray,
+                        thickness: 0.2,
+                      ),
+                      CustomCheckbox(
+                        value: prefs.getBool('blur')!,
+                        title: 'Blur Background',
+                        textStyle: getTextStyle(),
+                        onChanged: (p0) {
+                          setState(
+                            () {
+                              prefs.setBool('blur', !prefs.getBool('blur')!);
+                              prefs.setBool('solid', false);
+
+                              if (prefs.getBool('blur')!) {
+                                Window.setEffect(effect: WindowEffect.aero);
+                              } else {
+                                Window.setEffect(
+                                    effect: WindowEffect.transparent);
+                              }
+                            },
+                          );
+                        },
+                      ),
+                      CustomCheckbox(
+                        value: prefs.getBool('solid')!,
+                        title: 'Solid Background',
+                        textStyle: getTextStyle(),
+                        onChanged: (p0) {
+                          setState(
+                            () {
+                              prefs.setBool('solid', !prefs.getBool('solid')!);
+                              prefs.setBool('blur', false);
+
+                              if (prefs.getBool('solid')!) {
+                                Window.setEffect(effect: WindowEffect.solid);
+                              } else {
+                                Window.setEffect(
+                                    effect: WindowEffect.transparent);
+                              }
+                            },
+                          );
+                        },
+                      ),
+                      //2-add hotkey
+                      //3-add show redo
+                    ],
+                  ),
+                ),
+              );
+            });
           },
         );
       },
-      color: gray,
-      bgColor: shadowColor,
+      color: c.gray,
+      bgColor: c.shadowColor,
       size: 15,
+    );
+  }
+
+  Container settingsTopRow(StateSetter setState, BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(13),
+          topRight: Radius.circular(12),
+          bottomLeft: Radius.zero,
+          bottomRight: Radius.zero,
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: c.gray,
+            width: 0.3,
+          ),
+        ),
+        color: c.topRowColor,
+      ),
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 10,
+          ),
+          Icon(
+            CustomIcons.settings,
+            color: c.gray,
+            size: 17,
+          ),
+          const SizedBox(
+            width: 5,
+          ),
+          Text(
+            'Settings',
+            style: TextStyle(
+              color: c.gray,
+              fontFamily: 'Play',
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(
+            width: 175,
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                Navigator.of(context).pop();
+              });
+            },
+            tooltip: 'Close',
+            icon: Icon(
+              Icons.close,
+              size: 20,
+              color: c.gray,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -432,8 +501,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
       onPressed: () {
         whiteBoardController.undo();
       },
-      color: gray,
-      bgColor: shadowColor,
+      color: c.gray,
+      bgColor: c.shadowColor,
       size: 15,
     );
   }
@@ -447,8 +516,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
           strokeW = erase ? 100 : initStrokeW;
         });
       },
-      color: erase ? white : gray,
-      bgColor: shadowColor,
+      color: erase ? c.white : c.gray,
+      bgColor: c.shadowColor,
       size: 15,
     );
   }
@@ -488,7 +557,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
         });
       },
       color: strokeC,
-      bgColor: shadowColor,
+      bgColor: c.shadowColor,
       size: 20,
     );
   }
@@ -515,8 +584,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
           initStrokeW = 6;
         });
       },
-      color: gray,
-      bgColor: shadowColor,
+      color: c.gray,
+      bgColor: c.shadowColor,
       size: 15,
     );
   }
@@ -533,11 +602,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
         ),
         border: Border(
           bottom: BorderSide(
-            color: gray,
+            color: c.gray,
             width: 0.3,
           ),
         ),
-        color: topRowColor,
+        color: c.topRowColor,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -547,7 +616,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           ),
           Icon(
             CustomIcons.draw_icon,
-            color: gray,
+            color: c.gray,
             // size: 30,
           ),
           const SizedBox(
@@ -556,7 +625,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           Text(
             'Draw Over It',
             style: TextStyle(
-              color: gray,
+              color: c.gray,
               fontFamily: 'Play',
               fontWeight: FontWeight.bold,
             ),
@@ -574,20 +643,16 @@ class _HomePageState extends State<HomePage> with TrayListener {
             icon: Icon(
               Icons.horizontal_rule,
               size: 20,
-              color: gray,
+              color: c.gray,
             ),
           ),
           IconButton(
-            onPressed: () async {
-              await windowManager.minimize();
-              await windowManager.hide();
-              whiteBoardController.clear();
-            },
+            onPressed: hideWindow,
             tooltip: 'Close To Background',
             icon: Icon(
               Icons.close,
               size: 20,
-              color: gray,
+              color: c.gray,
             ),
           )
         ],
@@ -596,25 +661,16 @@ class _HomePageState extends State<HomePage> with TrayListener {
   }
 
   @override
-  void onTrayIconMouseDown() {
-    if (kDebugMode) {
-      print('onTrayIconMouseDown');
+  void onTrayIconMouseDown() async {
+    if (await windowManager.isVisible()) {
+      hideWindow();
+    } else {
+      windowManager.show();
     }
-    windowManager.show();
   }
 
   @override
   void onTrayIconRightMouseDown() {
-    if (kDebugMode) {
-      print('onTrayIconRightMouseDown');
-    }
     trayManager.popUpContextMenu();
-  }
-
-  @override
-  void onTrayMenuItemClick(MenuItem menuItem) {
-    if (kDebugMode) {
-      print(menuItem.toJson());
-    }
   }
 }

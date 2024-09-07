@@ -1,3 +1,4 @@
+import 'package:contactus/contactus.dart';
 import 'package:easy_draggable/easy_draggable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,22 +24,24 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TrayListener {
-  Menu? _menu;
   late WhiteBoardController whiteBoardController;
   late WhiteBoardController floatingBoardController;
   late SharedPreferences prefs;
   late HotKey hotKey;
-  double buttonWidth = 40;
-  double buttonHeight = 40;
+  Menu? _menu;
+
+  CustomColors c = CustomColors();
+  Color strokeC = Colors.blue;
+
+  String colorValue = "blue";
+
   double gapWidth = 15;
   double strokeW = 4;
   double initStrokeW = 4;
-  Color strokeC = Colors.blue;
-  String colorValue = "blue";
+
   bool erase = false;
   bool panelSwitch = false;
   bool floatingSwitch = true;
-  CustomColors c = CustomColors();
 
   @override
   void initState() {
@@ -94,8 +97,13 @@ class _HomePageState extends State<HomePage> with TrayListener {
         await hotKeyManager.register(
           hotKey,
           keyDownHandler: (hotKey) async {
-            if (await windowManager.isVisible()) {
-              hideWindow();
+            if (await windowManager.isVisible() &&
+                !await windowManager.isMinimized()) {
+              if (!await windowManager.isFocused()) {
+                await windowManager.focus();
+              } else {
+                hideWindow();
+              }
             } else {
               await windowManager.show();
             }
@@ -135,6 +143,40 @@ class _HomePageState extends State<HomePage> with TrayListener {
       ],
     );
     await trayManager.setContextMenu(_menu!);
+  }
+
+  //method to show Contact Me dialog
+  void showConatctDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: c.black.withOpacity(1),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ContactUs(
+                logo: const AssetImage('assets/images/pfp12313.PNG'),
+                email: 'yahya.amarneh73@gmail.com',
+                companyName: 'Yahya',
+                phoneNumber: null,
+                dividerThickness: 2,
+                githubUserName: 'YahyaAAAAAAA',
+                linkedinURL:
+                    'https://www.linkedin.com/in/yahya-amarneh-315528229/',
+                tagLine: 'Software Engineer',
+                twitterHandle: null,
+                textColor: c.black,
+                cardColor: c.gray,
+                companyColor: c.gray,
+                taglineColor: c.gray,
+                dividerColor: c.gray,
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   TextStyle getTextStyle() {
@@ -193,15 +235,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
                                 SizedBox(width: gapWidth),
                                 undoButton(),
                                 SizedBox(width: gapWidth),
-                                PanelIcon(
-                                  icon: Icons.clear_all_rounded,
-                                  onPressed: () {
-                                    whiteBoardController.clear();
-                                  },
-                                  color: c.gray,
-                                  bgColor: c.shadowColor,
-                                  size: 25,
-                                ),
+                                clearAllButton(),
                                 SizedBox(width: gapWidth),
                                 floatingBoardButton(),
                                 SizedBox(width: gapWidth),
@@ -216,6 +250,18 @@ class _HomePageState extends State<HomePage> with TrayListener {
           ),
         ],
       ),
+    );
+  }
+
+  PanelIcon clearAllButton() {
+    return PanelIcon(
+      icon: CustomIcons.trash,
+      onPressed: () {
+        whiteBoardController.clear();
+      },
+      color: c.gray,
+      bgColor: c.shadowColor,
+      size: 18,
     );
   }
 
@@ -373,8 +419,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       settingsTopRow(setState, context),
-                      //TODO:
-                      //1-add (remove stroke on close)
                       CustomCheckbox(
                         value: prefs.getBool('clear')!,
                         title: 'Clear board on close',
@@ -431,8 +475,33 @@ class _HomePageState extends State<HomePage> with TrayListener {
                           );
                         },
                       ),
-                      //2-add hotkey
-                      //3-add show redo
+                      Divider(
+                        color: c.gray,
+                        thickness: 0.2,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                showConatctDialog();
+                              },
+                              label: Text(
+                                'About Me',
+                                textAlign: TextAlign.left,
+                                style: getTextStyle(),
+                              ),
+                              icon: Icon(
+                                Icons.info_outline,
+                                color: c.gray,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -591,8 +660,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
       },
       onTap3: () {
         setState(() {
-          strokeW = 6;
-          initStrokeW = 6;
+          strokeW = 10;
+          initStrokeW = 10;
         });
       },
       color: c.gray,
@@ -642,12 +711,25 @@ class _HomePageState extends State<HomePage> with TrayListener {
             ),
           ),
           const SizedBox(
-            width: 220,
+            width: 185,
           ),
           IconButton(
-            onPressed: () {
+            onPressed: () async {
               setState(() {
                 panelSwitch = true;
+              });
+            },
+            tooltip: 'Hide',
+            icon: Icon(
+              CustomIcons.eye_crossed,
+              size: 15,
+              color: c.gray,
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
+              setState(() {
+                windowManager.minimize();
               });
             },
             tooltip: 'Minimize',
@@ -673,7 +755,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
   @override
   void onTrayIconMouseDown() async {
-    if (await windowManager.isVisible()) {
+    if (await windowManager.isVisible() && !await windowManager.isMinimized()) {
       hideWindow();
     } else {
       windowManager.show();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_1/utils/custom_colors.dart';
 
+// ignore: must_be_immutable
 class CustomCheckbox extends StatelessWidget {
   CustomCheckbox({
     super.key,
@@ -19,7 +20,7 @@ class CustomCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10.0),
       child: Row(
         children: [
           Text(

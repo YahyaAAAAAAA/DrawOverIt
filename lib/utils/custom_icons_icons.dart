@@ -32,4 +32,7 @@ class CustomIcons {
   static const IconData board = IconData(0xe835, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData add_board = IconData(0xe836, fontFamily: _kFontFam, fontPackage: _kFontPkg);
   static const IconData active_board = IconData(0xe837, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData trash = IconData(0xe838, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData eye = IconData(0xe839, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+  static const IconData eye_crossed = IconData(0xe83a, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }

@@ -66,10 +66,10 @@ class MenuButtonWidth extends StatelessWidget {
           ),
           PopupMenuItem(
             onTap: onTap3,
-            value: 6,
+            value: 10,
             child: Center(
               child: Divider(
-                thickness: 6,
+                thickness: 10,
                 color: color,
               ),
             ),

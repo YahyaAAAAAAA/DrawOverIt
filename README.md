@@ -59,7 +59,7 @@
 
 <div align="left">
 <a href="https://github.com/YahyaAAAAAAA/Squareo/releases/tag/v1.1.0" style="text-decoration: none">
-  <img src="Draw Over It Windows.png" height="100" alt="windows"  />
+  <img src="assets/images/Draw Over It Windows.png" height="100" alt="windows"  />
 </a>
   
 </div>
@@ -70,6 +70,6 @@
 
 ###
 
-<p align="left">Squareo is developed by me Yahya. I hope you enjoy playing my game as much as I enjoyed creating it. For support or feedback, please contact me above.</p>
+<p align="left">Draw Over It is developed by me Yahya. I hope you enjoy the app. For support or feedback, please contact me above.</p>
 
 ###

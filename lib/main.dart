@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/window.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:test_1/pages/home.dart';
+import 'package:DrawOverIt/pages/home.dart';
 import 'package:window_manager/window_manager.dart';
 import 'dart:io' show Platform;
 

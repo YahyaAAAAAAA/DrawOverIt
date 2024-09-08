@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_1/utils/custom_colors.dart';
+import 'package:DrawOverIt/utils/custom_colors.dart';
 
 // ignore: must_be_immutable
 class CustomCheckbox extends StatelessWidget {

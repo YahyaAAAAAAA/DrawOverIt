@@ -6,12 +6,12 @@ import 'package:flutter_acrylic/window.dart';
 import 'package:flutter_acrylic/window_effect.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:test_1/components/custom_checkbox.dart';
-import 'package:test_1/components/menu_button_color.dart';
-import 'package:test_1/components/menu_button_width.dart';
-import 'package:test_1/components/panel_icon.dart';
-import 'package:test_1/utils/custom_colors.dart';
-import 'package:test_1/utils/custom_icons_icons.dart';
+import 'package:DrawOverIt/components/custom_checkbox.dart';
+import 'package:DrawOverIt/components/menu_button_color.dart';
+import 'package:DrawOverIt/components/menu_button_width.dart';
+import 'package:DrawOverIt/components/panel_icon.dart';
+import 'package:DrawOverIt/utils/custom_colors.dart';
+import 'package:DrawOverIt/utils/custom_icons_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:whiteboard/whiteboard.dart';
 import 'package:window_manager/window_manager.dart';
@@ -27,7 +27,14 @@ class _HomePageState extends State<HomePage> with TrayListener {
   late WhiteBoardController whiteBoardController;
   late WhiteBoardController floatingBoardController;
   late SharedPreferences prefs;
-  late HotKey hotKey;
+  late HotKey callKey;
+  late HotKey undoKey;
+  late HotKey redoKey;
+  late HotKey eraseKey;
+  late HotKey clearKey;
+  late HotKey floatKey;
+  late HotKey blurKey;
+  late HotKey solidKey;
   Menu? _menu;
 
   CustomColors c = CustomColors();
@@ -54,10 +61,59 @@ class _HomePageState extends State<HomePage> with TrayListener {
     floatingBoardController = WhiteBoardController();
 
     //register hotkey (ALT+Q)
-    hotKey = HotKey(
+    callKey = HotKey(
       key: PhysicalKeyboardKey.keyQ,
       modifiers: [HotKeyModifier.alt],
       scope: HotKeyScope.system,
+    );
+
+    //undo hotkey
+    undoKey = HotKey(
+      key: PhysicalKeyboardKey.keyZ,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //redo hotkey
+    redoKey = HotKey(
+      key: PhysicalKeyboardKey.keyU,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //erase hotkey
+    eraseKey = HotKey(
+      key: PhysicalKeyboardKey.keyE,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //erase hotkey
+    clearKey = HotKey(
+      key: PhysicalKeyboardKey.keyX,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //erase hotkey
+    floatKey = HotKey(
+      key: PhysicalKeyboardKey.keyF,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //blur background hotkey
+    blurKey = HotKey(
+      key: PhysicalKeyboardKey.keyB,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
+    );
+
+    //solid background hotkey
+    solidKey = HotKey(
+      key: PhysicalKeyboardKey.keyS,
+      modifiers: [HotKeyModifier.control],
+      scope: HotKeyScope.inapp,
     );
 
     //maximize screen
@@ -93,22 +149,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
           Window.setEffect(effect: WindowEffect.transparent);
         }
 
-        //show/hide app when (ALT+Q) is pressed system wide .
-        await hotKeyManager.register(
-          hotKey,
-          keyDownHandler: (hotKey) async {
-            if (await windowManager.isVisible() &&
-                !await windowManager.isMinimized()) {
-              if (!await windowManager.isFocused()) {
-                await windowManager.focus();
-              } else {
-                hideWindow();
-              }
-            } else {
-              await windowManager.show();
-            }
-          },
-        );
+        //hotkeys functionalties
+        registerHotKyes();
       },
     );
     super.initState();
@@ -128,6 +170,107 @@ class _HomePageState extends State<HomePage> with TrayListener {
     if (prefs.getBool('clear')!) {
       whiteBoardController.clear();
     }
+  }
+
+  //register hotkeys
+  void registerHotKyes() async {
+    //call app
+    await hotKeyManager.register(
+      callKey,
+      keyDownHandler: (hotKey) async {
+        if (await windowManager.isVisible() &&
+            !await windowManager.isMinimized()) {
+          if (!await windowManager.isFocused()) {
+            await windowManager.focus();
+          } else {
+            hideWindow();
+          }
+        } else {
+          await windowManager.show();
+        }
+      },
+    );
+
+    //undo stroke
+    await hotKeyManager.register(
+      undoKey,
+      keyDownHandler: (hotKey) {
+        whiteBoardController.undo();
+      },
+    );
+
+    //redo stroke
+    await hotKeyManager.register(
+      redoKey,
+      keyDownHandler: (hotKey) {
+        whiteBoardController.redo();
+      },
+    );
+
+    //enable eraser
+    await hotKeyManager.register(
+      eraseKey,
+      keyDownHandler: (hotKey) {
+        setState(() {
+          erase = !erase;
+          strokeW = erase ? 100 : initStrokeW;
+        });
+      },
+    );
+
+    //clear board
+    await hotKeyManager.register(
+      clearKey,
+      keyDownHandler: (hotKey) {
+        setState(() {
+          whiteBoardController.clear();
+        });
+      },
+    );
+
+    //clear board
+    await hotKeyManager.register(
+      floatKey,
+      keyDownHandler: (hotKey) {
+        setState(() {
+          floatingSwitch = !floatingSwitch;
+        });
+      },
+    );
+
+    //blur background
+    await hotKeyManager.register(
+      blurKey,
+      keyDownHandler: (hotKey) {
+        setState(() {
+          prefs.setBool('blur', !prefs.getBool('blur')!);
+          prefs.setBool('solid', false);
+
+          if (prefs.getBool('blur')!) {
+            Window.setEffect(effect: WindowEffect.aero);
+          } else {
+            Window.setEffect(effect: WindowEffect.transparent);
+          }
+        });
+      },
+    );
+
+    //solid background
+    await hotKeyManager.register(
+      solidKey,
+      keyDownHandler: (hotKey) {
+        setState(() {
+          prefs.setBool('solid', !prefs.getBool('solid')!);
+          prefs.setBool('blur', false);
+
+          if (prefs.getBool('solid')!) {
+            Window.setEffect(effect: WindowEffect.solid);
+          } else {
+            Window.setEffect(effect: WindowEffect.transparent);
+          }
+        });
+      },
+    );
   }
 
   //handels context menu (for now only Exit App)
@@ -174,6 +317,80 @@ class _HomePageState extends State<HomePage> with TrayListener {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  //show dialog for shortcuts
+  void showShortcutsDialg() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          content: Container(
+            decoration: BoxDecoration(
+              color: c.black,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                settingsTopRow(
+                    context, "Shortcuts", Icons.keyboard_rounded, 22),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Open/Close : ALT+Q (System Wise)',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Undo : CTRL+Z',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Redo : CTRL+U',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Eraser : CTRL+E',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Clear All : CTRL+X',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Floating Board : CTRL+F',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Blur Background : CTRL+B',
+                        style: getTextStyle(),
+                      ),
+                      Divider(thickness: 0.2, color: c.gray),
+                      Text(
+                        'Solid Background : CTRL+S',
+                        style: getTextStyle(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -418,7 +635,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      settingsTopRow(setState, context),
+                      settingsTopRow(
+                          context, "Settings", CustomIcons.settings, 17),
                       CustomCheckbox(
                         value: prefs.getBool('clear')!,
                         title: 'Clear board on close',
@@ -480,7 +698,36 @@ class _HomePageState extends State<HomePage> with TrayListener {
                         thickness: 0.2,
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding:
+                            const EdgeInsets.only(top: 8, bottom: 8, right: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                showShortcutsDialg();
+                              },
+                              label: Text(
+                                'Keyboard Shortcuts',
+                                textAlign: TextAlign.left,
+                                style: getTextStyle(),
+                              ),
+                              icon: Icon(
+                                Icons.keyboard_rounded,
+                                color: c.gray,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(
+                        color: c.gray,
+                        thickness: 0.2,
+                      ),
+                      Padding(
+                        padding:
+                            const EdgeInsets.only(top: 8, bottom: 8, right: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -516,7 +763,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
     );
   }
 
-  Container settingsTopRow(StateSetter setState, BuildContext context) {
+  Container settingsTopRow(
+      BuildContext context, String title, IconData icon, double iconSize) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.only(
@@ -539,15 +787,15 @@ class _HomePageState extends State<HomePage> with TrayListener {
             width: 10,
           ),
           Icon(
-            CustomIcons.settings,
+            icon,
             color: c.gray,
-            size: 17,
+            size: iconSize,
           ),
           const SizedBox(
             width: 5,
           ),
           Text(
-            'Settings',
+            title,
             style: TextStyle(
               color: c.gray,
               fontFamily: 'Play',

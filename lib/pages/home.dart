@@ -54,7 +54,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
   void initState() {
     //tray listener, icon and menu setup
     trayManager.addListener(this);
-    _setContextMenu();
 
     //white board controller
     whiteBoardController = WhiteBoardController();
@@ -124,6 +123,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
         //set tray icon
         await trayManager.setIcon('assets/images/draw_icon.ico');
+
+        await _setContextMenu();
 
         //shared pref
         prefs = await SharedPreferences.getInstance();
@@ -274,7 +275,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
   }
 
   //handels context menu (for now only Exit App)
-  void _setContextMenu() async {
+  Future _setContextMenu() async {
     _menu ??= Menu(
       items: [
         MenuItem(
@@ -1011,7 +1012,9 @@ class _HomePageState extends State<HomePage> with TrayListener {
   }
 
   @override
-  void onTrayIconRightMouseDown() {
-    trayManager.popUpContextMenu();
+  void onTrayIconRightMouseDown() async {
+    await trayManager.popUpContextMenu();
+    print('object');
+    super.onTrayIconRightMouseDown();
   }
 }

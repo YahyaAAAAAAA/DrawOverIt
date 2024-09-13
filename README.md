@@ -52,7 +52,7 @@ https://github.com/user-attachments/assets/671a5476-34f5-47b3-86a8-319ca94dfd01
 
 ###
 
-<p align="left">Draw Over It is developed using the framework Flutter with Dart as the programming language.</p>
+<p align="left">Draw Over It is developed using the framework Flutter.</p>
 
 ###
 

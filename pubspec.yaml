@@ -39,7 +39,6 @@ dependencies:
   tray_manager: ^0.2.3
   flutter_acrylic: ^1.1.4
   whiteboard: ^0.0.2
-  easy_draggable: ^0.0.2
   hotkey_manager: ^0.2.3
   flutter_launcher_icons: ^0.13.1
   shared_preferences: ^2.3.2

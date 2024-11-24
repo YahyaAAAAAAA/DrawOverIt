@@ -1,5 +1,5 @@
+import 'package:DrawOverIt/components/draggable.dart';
 import 'package:contactus/contactus.dart';
-import 'package:easy_draggable/easy_draggable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/window.dart';
@@ -49,6 +49,8 @@ class _HomePageState extends State<HomePage> with TrayListener {
   bool erase = false;
   bool panelSwitch = false;
   bool floatingSwitch = true;
+  bool slidePanel = true;
+  bool slideBoard = true;
 
   @override
   void initState() {
@@ -141,7 +143,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           await prefs.setBool('solid', false);
         }
 
-        //make window blur or solid (defualt trans)
+        //make window blur or solid (default trans)
         if (prefs.getBool('blur')!) {
           Window.setEffect(effect: WindowEffect.aero);
         } else if (prefs.getBool('solid')!) {
@@ -150,7 +152,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
           Window.setEffect(effect: WindowEffect.transparent);
         }
 
-        //hotkeys functionalties
+        //hotkeys functionalities
         registerHotKyes();
       },
     );
@@ -274,7 +276,7 @@ class _HomePageState extends State<HomePage> with TrayListener {
     );
   }
 
-  //handels context menu (for now only Exit App)
+  //handles context menu (for now only Exit App)
   Future _setContextMenu() async {
     _menu ??= Menu(
       items: [
@@ -427,9 +429,10 @@ class _HomePageState extends State<HomePage> with TrayListener {
             duration: const Duration(milliseconds: 300),
             child: panelSwitch
                 ? minimizedButton()
-                : EasyDraggableWidget(
+                : DraggableWidget(
                     left: 100,
                     top: 200,
+                    isSlidable: slidePanel,
                     floatingBuilder: (context, constraints) => Container(
                       width: 450,
                       decoration: BoxDecoration(
@@ -498,9 +501,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
   }
 
   Widget floatingBoard() {
-    return EasyDraggableWidget(
+    return DraggableWidget(
       left: floatingSwitch ? 3000 : 1000,
       top: 50,
+      speed: 10000,
+      isSlidable: slideBoard,
       floatingBuilder: (context, constraints) {
         return Column(
           children: [
@@ -539,7 +544,20 @@ class _HomePageState extends State<HomePage> with TrayListener {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 260),
+                  const SizedBox(width: 220),
+                  IconButton(
+                    onPressed: () => setState(() => slideBoard = !slideBoard),
+                    tooltip: slideBoard
+                        ? 'Make Board Not Slide'
+                        : 'Make Board Slide',
+                    icon: Icon(
+                      slideBoard
+                          ? Icons.motion_photos_on
+                          : Icons.motion_photos_off,
+                      size: 20,
+                      color: c.gray,
+                    ),
+                  ),
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -960,7 +978,16 @@ class _HomePageState extends State<HomePage> with TrayListener {
             ),
           ),
           const SizedBox(
-            width: 185,
+            width: 145,
+          ),
+          IconButton(
+            onPressed: () async => setState(() => slidePanel = !slidePanel),
+            tooltip: slidePanel ? 'Make Panel Not Slide' : 'Make Panel Slide',
+            icon: Icon(
+              slidePanel ? Icons.motion_photos_on : Icons.motion_photos_off,
+              size: 20,
+              color: c.gray,
+            ),
           ),
           IconButton(
             onPressed: () async {

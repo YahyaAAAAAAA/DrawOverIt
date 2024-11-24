@@ -52,7 +52,7 @@ https://github.com/user-attachments/assets/671a5476-34f5-47b3-86a8-319ca94dfd01
 
 ###
 
-<p align="left">Draw Over It is developed using the framework Flutter with Dart as the programming language.</p>
+<p align="left">Draw Over It is developed using the framework Flutter.</p>
 
 ###
 
@@ -61,7 +61,7 @@ https://github.com/user-attachments/assets/671a5476-34f5-47b3-86a8-319ca94dfd01
 ###
 
 <div align="left">
-<a href="https://github.com/YahyaAAAAAAA/DrawOverIt/releases/tag/v1.0" style="text-decoration: none">
+<a href="https://github.com/YahyaAAAAAAA/DrawOverIt/releases/tag/v1.1" style="text-decoration: none">
   <img src="assets/images/Draw Over It Windows.png" height="100" alt="windows"  />
 </a>
   

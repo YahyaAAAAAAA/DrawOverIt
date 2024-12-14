@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Draw Over It"
-#define MyAppVersion "2.0"
+#define MyAppVersion "3.0"
 #define MyAppPublisher "Yahya Amarneh"
 #define MyAppURL "https://github.com/YahyaAAAAAAA/DrawOverIt"
 #define MyAppExeName "DrawOverIt.exe"
@@ -31,7 +31,7 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir=D:\Flutterrrr\FlutterProjects\draw_over_it\installers
-OutputBaseFilename=draw_over_it_2.0
+OutputBaseFilename=draw_over_it_3.0
 SetupIconFile=D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\data\flutter_assets\assets\images\exe_icon.ico
 Compression=lzma
 SolidCompression=yes
@@ -48,7 +48,7 @@ Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Rel
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\flutter_acrylic_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\flutter_windows.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\hotkey_manager_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\screen_retriever_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\screen_retriever_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\tray_manager_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\url_launcher_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\Flutterrrr\FlutterProjects\draw_over_it\build\windows\x64\runner\Release\window_manager_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion

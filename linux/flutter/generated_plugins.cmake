@@ -5,7 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_acrylic
   hotkey_manager_linux
-  screen_retriever
+  screen_retriever_linux
   tray_manager
   url_launcher_linux
   window_manager

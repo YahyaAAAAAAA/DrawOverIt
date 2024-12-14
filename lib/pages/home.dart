@@ -1,5 +1,6 @@
 import 'package:DrawOverIt/components/draggable.dart';
 import 'package:contactus/contactus.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_acrylic/window.dart';
@@ -39,12 +40,25 @@ class _HomePageState extends State<HomePage> with TrayListener {
 
   CustomColors c = CustomColors();
   Color strokeC = Colors.blue;
-
-  String colorValue = "blue";
+  int strokeColorValue = 0;
+  List<Color> strokeColors = [
+    Colors.blue,
+    Colors.yellow,
+    Colors.red,
+    Colors.green,
+    Colors.white,
+  ];
 
   double gapWidth = 15;
+
   double strokeW = 4;
   double initStrokeW = 4;
+  int strokeWidthValue = 1;
+  List<double> strokeWidths = [
+    2,
+    4,
+    10,
+  ];
 
   bool erase = false;
   bool panelSwitch = false;
@@ -412,64 +426,111 @@ class _HomePageState extends State<HomePage> with TrayListener {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          //whiteboard
-          WhiteBoard(
-            backgroundColor: Colors.transparent,
-            controller: whiteBoardController,
-            strokeWidth: strokeW,
-            isErasing: erase,
-            strokeColor: strokeC,
-          ),
-          //floating board
-          floatingBoard(),
-          //controlling panel
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: panelSwitch
-                ? minimizedButton()
-                : DraggableWidget(
-                    left: 100,
-                    top: 200,
-                    isSlidable: slidePanel,
-                    floatingBuilder: (context, constraints) => Container(
-                      width: 450,
-                      decoration: BoxDecoration(
-                        color: c.black,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          topRow(),
-                          Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                colorStrokeSelect(),
-                                SizedBox(width: gapWidth),
-                                widthStrokeSelect(),
-                                SizedBox(width: gapWidth),
-                                eraseButton(),
-                                SizedBox(width: gapWidth),
-                                undoButton(),
-                                SizedBox(width: gapWidth),
-                                clearAllButton(),
-                                SizedBox(width: gapWidth),
-                                floatingBoardButton(),
-                                SizedBox(width: gapWidth),
-                                settingsButton(context),
-                              ],
+      body: Listener(
+        onPointerDown: (event) {
+          //mouse right click
+          if (event.kind == PointerDeviceKind.mouse &&
+              event.buttons == kSecondaryMouseButton) {
+            setState(() {
+              if (strokeWidthValue == 0) {
+                strokeW = strokeWidths[1];
+                strokeWidthValue = 1;
+              } else if (strokeWidthValue == 1) {
+                strokeW = strokeWidths[2];
+                strokeWidthValue = 2;
+              } else if (strokeWidthValue == 2) {
+                strokeW = strokeWidths[0];
+                strokeWidthValue = 0;
+              }
+            });
+          }
+        },
+        onPointerSignal: (event) {
+          //mouse scroll
+          if (event is PointerScrollEvent) {
+            double yScroll = event.scrollDelta.dy;
+
+            //scroll down
+            if (yScroll < 0) {
+              if (strokeColorValue == 0) {
+                return;
+              }
+              setState(() {
+                strokeC = strokeColors[strokeColorValue - 1];
+
+                strokeColorValue -= 1;
+              });
+            }
+            if (yScroll > 0) {
+              if (strokeColorValue == (strokeColors.length - 1)) {
+                return;
+              }
+              setState(() {
+                strokeC = strokeColors[strokeColorValue + 1];
+                strokeColorValue += 1;
+              });
+            }
+          }
+        },
+        child: Stack(
+          children: [
+            //whiteboard
+            WhiteBoard(
+              backgroundColor: Colors.transparent,
+              controller: whiteBoardController,
+              strokeWidth: strokeW,
+              isErasing: erase,
+              strokeColor: strokeC,
+            ),
+            //floating board
+            floatingBoard(),
+            //controlling panel
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: panelSwitch
+                  ? minimizedButton()
+                  : DraggableWidget(
+                      left: 100,
+                      top: 200,
+                      isSlidable: slidePanel,
+                      floatingBuilder: (context, constraints) => Container(
+                        width: 450,
+                        decoration: BoxDecoration(
+                          color: c.black,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            topRow(),
+                            Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  colorStrokeSelect(),
+                                  SizedBox(width: gapWidth),
+                                  widthStrokeSelect(),
+                                  SizedBox(width: gapWidth),
+                                  eraseButton(),
+                                  SizedBox(width: gapWidth),
+                                  undoButton(),
+                                  SizedBox(width: gapWidth),
+                                  clearAllButton(),
+                                  SizedBox(width: gapWidth),
+                                  floatingBoardButton(),
+                                  SizedBox(width: gapWidth),
+                                  settingsButton(context),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -872,35 +933,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
   MenuColorButton colorStrokeSelect() {
     return MenuColorButton(
       icon: Icons.circle,
-      colorValue: colorValue,
-      onTap1: () {
+      value: strokeColorValue,
+      onSelected: (value) {
         setState(() {
-          strokeC = Colors.blue;
-          colorValue = "blue";
-        });
-      },
-      onTap2: () {
-        setState(() {
-          strokeC = Colors.yellow;
-          colorValue = "yellow";
-        });
-      },
-      onTap3: () {
-        setState(() {
-          strokeC = Colors.red;
-          colorValue = "red";
-        });
-      },
-      onTap4: () {
-        setState(() {
-          strokeC = Colors.green;
-          colorValue = "green";
-        });
-      },
-      onTap5: () {
-        setState(() {
-          strokeC = Colors.white;
-          colorValue = "white";
+          strokeC = strokeColors[value];
+          strokeColorValue = value;
         });
       },
       color: strokeC,
@@ -913,22 +950,11 @@ class _HomePageState extends State<HomePage> with TrayListener {
     return MenuButtonWidth(
       icon: CustomIcons.line_width,
       widthValue: strokeW,
-      onTap1: () {
+      value: strokeWidthValue,
+      onSelected: (value) {
         setState(() {
-          strokeW = 2;
-          initStrokeW = 2;
-        });
-      },
-      onTap2: () {
-        setState(() {
-          strokeW = 4;
-          initStrokeW = 4;
-        });
-      },
-      onTap3: () {
-        setState(() {
-          strokeW = 10;
-          initStrokeW = 10;
+          strokeW = strokeWidths[value];
+          strokeWidthValue = value;
         });
       },
       color: c.gray,
@@ -1041,7 +1067,6 @@ class _HomePageState extends State<HomePage> with TrayListener {
   @override
   void onTrayIconRightMouseDown() async {
     await trayManager.popUpContextMenu();
-    print('object');
     super.onTrayIconRightMouseDown();
   }
 }

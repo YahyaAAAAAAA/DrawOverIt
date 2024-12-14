@@ -1,31 +1,22 @@
 import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
 class MenuColorButton extends StatelessWidget {
-  MenuColorButton({
+  const MenuColorButton({
     super.key,
     required this.icon,
     required this.color,
     required this.bgColor,
     required this.size,
-    required this.colorValue,
-    required this.onTap1,
-    required this.onTap2,
-    required this.onTap3,
-    required this.onTap4,
-    required this.onTap5,
+    required this.value,
+    this.onSelected,
   });
 
   final IconData icon;
   final Color color;
   final Color bgColor;
   final double size;
-  final String colorValue;
-  void Function()? onTap1;
-  void Function()? onTap2;
-  void Function()? onTap3;
-  void Function()? onTap4;
-  void Function()? onTap5;
+  final int value;
+  final void Function(int)? onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +33,15 @@ class MenuColorButton extends StatelessWidget {
       position: PopupMenuPosition.under,
       offset: const Offset(0, 20),
       constraints: const BoxConstraints.tightFor(width: 50),
-      initialValue: colorValue,
+      initialValue: value,
       tooltip: '',
       popUpAnimationStyle:
           AnimationStyle(duration: const Duration(milliseconds: 200)),
+      onSelected: onSelected,
       itemBuilder: (context) {
         return [
           PopupMenuItem(
-            value: "blue",
-            onTap: onTap1,
+            value: 0,
             child: Center(
               child: Icon(
                 icon,
@@ -60,8 +51,7 @@ class MenuColorButton extends StatelessWidget {
             ),
           ),
           PopupMenuItem(
-            onTap: onTap2,
-            value: "yellow",
+            value: 1,
             child: Center(
               child: Icon(
                 icon,
@@ -71,8 +61,7 @@ class MenuColorButton extends StatelessWidget {
             ),
           ),
           PopupMenuItem(
-            onTap: onTap3,
-            value: "red",
+            value: 2,
             child: Center(
               child: Icon(
                 icon,
@@ -82,8 +71,7 @@ class MenuColorButton extends StatelessWidget {
             ),
           ),
           PopupMenuItem(
-            onTap: onTap4,
-            value: "green",
+            value: 3,
             child: Center(
               child: Icon(
                 icon,
@@ -93,8 +81,7 @@ class MenuColorButton extends StatelessWidget {
             ),
           ),
           PopupMenuItem(
-            onTap: onTap5,
-            value: "white",
+            value: 4,
             child: Center(
               child: Icon(
                 icon,
